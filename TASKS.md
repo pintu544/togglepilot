@@ -79,9 +79,9 @@
       Done means: the same experiment setup is timed through TogglePilot end to end (excluding human reading time, stated as such); `scorecard.md` now holds both measured columns — time, surfaces touched, traps checked 5 of 5, approvals 3 — ready to drop into README and video unchanged.
       DONE 26 Nov 2026 (commit 3959376): TogglePilot column — 8.5 s, 1 surface, 5/5 traps, 3 approvals; measured from the Slice 1 run record (no fresh timed run — would create a second experiment); first-time human reading excluded; Safety claim preserved, speed stays struck out.
       Unblocks: T-3.1.
-- [ ] T-2.7: **Slice 2 QA + Pintu confirmation**
+- [x] T-2.7: **Slice 2 QA + Pintu confirmation**
       Done means: fresh adversarial QA verifies the experiment's data is real pipeline output (exposures panel, no double-variant identities, SRM state checked), the disclosure text matches the actual cohort and rates, and no credential or seeded/organic ambiguity exists anywhere in output. Pintu views the live results page and confirms the climax is demoable. Criticals fixed before close.
-      STATUS 26 Nov 2026 ~16:35 IST: builder verification done (83/83 tests green, no credential in tracked files or host dist, disclosure matches frozen rates, no double-variant identities, SRM none). Slice NOT closed — Pintu's confirmation (views the live results page) still pending.
+      STATUS 26 Nov 2026 17:42 IST: CLOSED — Pintu confirmed (tapped "Yes, Slice 2 is closed"). Experiment 590 completed with Variant_1 rolled out to 100% (99.41% win, lift 51.24%); 527/baseline untouched; all Slice 2 boxes ticked.
 
 ## Slice 3 — Packaging: README, video, review, submit (28 Nov 18:00 – 29 Nov 20:00 IST)
 
