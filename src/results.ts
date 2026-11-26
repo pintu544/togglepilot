@@ -7,10 +7,11 @@ type Inference = { lift: number; ci_low: number; ci_high: number; chance_to_win:
 type Series = { points: { new_identities: Record<string, number> }[] };
 type Metric = { metric: number; metric_name: string; aggregation: string; direction?: string };
 type Experiment = {
+  id?: number;
   status: string;
   started_at: string | null;
   metrics: Metric[];
-  feature: { multivariate_options: { id: number; key?: string | null }[] };
+  feature: { id?: number; multivariate_options: { id: number; key?: string | null; string_value?: string | null }[] };
   experiment_rollout?: {
     multivariate_feature_state_values: { multivariate_feature_option: number; percentage_allocation: number }[];
   } | null;
@@ -75,9 +76,11 @@ function exposuresByArm(series?: Series): Record<string, number> {
 const pct = (fraction: number) => `${+(fraction * 100).toFixed(2)}%`;
 const count = (value: number | undefined) => value ?? "unavailable";
 
-export function renderResults(id: number, { response, fetched_at }: CacheEntry, disclosure: string, cacheNotice: string): string {
+function describeResults(id: number, { response, fetched_at }: CacheEntry, disclosure: string, cacheNotice: string, rollout = false) {
   const { experiment, results, exposures } = response;
   const payload = results?.payload;
+  const winners = new Map<string, Inference>();
+  let collecting = !payload || !experiment.metrics.length;
   const lines = [
     `Experiment ${id} results`,
     `As of ${results?.as_of ?? `${timestamp(fetched_at)} (API read time, no results timestamp available)`}.`,
@@ -127,13 +130,14 @@ export function renderResults(id: number, { response, fetched_at }: CacheEntry, 
       if (occurrence && (conversions === undefined || conversions < 5)) missing.push(`${key} needs ${conversions === undefined ? "at least 5 conversions (count unavailable)" : `${5 - conversions} more conversions`}`);
     }
     if (missing.length || !result) {
+      collecting = true;
       if (missing.length) lines.push(`  Collecting data. ${missing.join(", ")}.`);
       else if (payload) lines.push("  Collecting data. Metric results are unavailable.");
       continue;
     }
 
     for (const key of keys) {
-      if (key === CONTROL) continue;
+      if (key === CONTROL && (!rollout || !result.inference?.[CONTROL])) continue;
       const reported = Object.hasOwn(result.inference ?? {}, key) ? result.inference?.[key] : undefined;
       const control = result.variants[CONTROL];
       const variant = result.variants[key];
@@ -142,18 +146,27 @@ export function renderResults(id: number, { response, fetched_at }: CacheEntry, 
       const estimated = reported === undefined && canEstimate
         ? estimateOccurrence(control, variant, metric.direction) : undefined;
       const stats = reported ?? estimated;
-      if (!stats) {
+      if (!stats || !Number.isFinite(stats.chance_to_win) || !Number.isFinite(stats.lift)) {
+        collecting = true;
         lines.push(`  ${key}: Collecting data. Flagsmith inference is unavailable.`);
         continue;
       }
+      if (!srm && stats.chance_to_win > 0.95) {
+        const previous = winners.get(key);
+        if (!previous || previous.chance_to_win < stats.chance_to_win) winners.set(key, stats);
+      }
       lines.push(`  ${key} (${reported ? "Flagsmith" : "TogglePilot Bayesian estimate"}): Lift vs control ${pct(stats.lift)}, 95% credible interval ${pct(stats.ci_low)} to ${pct(stats.ci_high)}, Chance to beat control ${pct(stats.chance_to_win)}.`);
-      if (srm) continue;
+      if (srm || rollout) continue;
       if (stats.chance_to_win > 0.95) lines.push(`  ${key}: Winning. Roll out the winner.`);
       else if (stats.chance_to_win < 0.05) lines.push(`  ${key}: Losing. Stop this variation.`);
       else lines.push(`  ${key}: Inconclusive. Keep running.`);
     }
   }
-  return [...lines, disclosure].join("\n");
+  return { output: (rollout ? lines : [...lines, disclosure]).join("\n"), experiment, winners, collecting, srm, final: results?.is_final };
+}
+
+export function renderResults(id: number, entry: CacheEntry, disclosure: string, cacheNotice: string): string {
+  return describeResults(id, entry, disclosure, cacheNotice).output;
 }
 
 type ReadOptions = {
@@ -168,10 +181,14 @@ type ReadOptions = {
   fetchImpl?: typeof fetch;
 };
 
-export async function readResults({
+export async function readResults(options: ReadOptions): Promise<string> {
+  return (await readResultsReport(options)).output;
+}
+
+export async function readResultsReport({
   experimentId, apiKey, environmentKey, refresh, disclosure, redact,
   cachePath = "runs/.results-cache.json", now = Date.now, fetchImpl = fetch,
-}: ReadOptions): Promise<string> {
+}: ReadOptions, rollout = false) {
   const host = (process.env.FLAGSMITH_API_URL ?? "https://api.flagsmith.com").replace(/\/+$/, "");
   const base = `${host}/api/v1/environments/${encodeURIComponent(environmentKey)}/experiments/${experimentId}/`;
   const key = createHash("sha256").update(base).digest("hex");
@@ -212,10 +229,10 @@ export async function readResults({
       },
     );
     const prior = cache[key];
-    if (prior && now() < prior.fetched_at + TTL) {
+    if (!rollout && prior && now() < prior.fetched_at + TTL) {
       const next = timestamp(prior.fetched_at + TTL);
       const notice = refresh ? "Refresh refused within the five-minute window. Showing cached response." : "Showing cached response.";
-      return renderResults(experimentId, prior, disclosure, `${notice} Fresh read available at ${next}.`);
+      return describeResults(experimentId, prior, disclosure, `${notice} Fresh read available at ${next}.`);
     }
 
     // OpenAPI https://api.flagsmith.com/api/v1/docs/
@@ -227,7 +244,7 @@ export async function readResults({
     ]);
     const entry = { fetched_at: now(), response: { experiment, results, exposures } };
     const next = timestamp(entry.fetched_at + TTL);
-    const notice = [`Fetched from Flagsmith. Fresh read available at ${next}.`];
+    const notice = [rollout ? "Fetched from Flagsmith." : `Fetched from Flagsmith. Fresh read available at ${next}.`];
     cache[key] = entry;
     const temp = join(lock, "cache.json");
     await writeFile(temp, JSON.stringify(cache), { mode: 0o600 });
@@ -241,7 +258,7 @@ export async function readResults({
       notice.push("Flagsmith computation is available after start and before results are final.");
     }
 
-    return renderResults(experimentId, entry, disclosure, notice.join(" "));
+    return describeResults(experimentId, entry, disclosure, notice.join(" "), rollout);
   } finally {
     // The temporary file can remain if the atomic rename failed.
     await rm(lock, { recursive: true, force: true });

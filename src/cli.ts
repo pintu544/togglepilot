@@ -8,6 +8,7 @@ import { approvalGate } from "./gate";
 import { createPrompt } from "./prompt";
 import { appendExecutionRecord, saveRunRecord } from "./record";
 import { readResults } from "./results";
+import { rollout } from "./rollout";
 import { containsCredential, isExperimentPlan, planExperiment, type ExperimentPlan, type PlannerContext } from "./planner";
 import { generateInstrumentationSnippet } from "./snippet";
 import { formatPreflightReport, runPreflightChecks } from "./validator";
@@ -24,7 +25,8 @@ Usage:
                               [--flag <name>] [--metric-event <event>]
   togglepilot results [--experiment-id <id>] [--refresh]
                                 Plain-English readout of the experiment's results
-  togglepilot rollout            Recommend and (on approval) roll out the winner
+  togglepilot rollout [--experiment-id <id>] [--dry-run]
+                                Recommend and (on approval) roll out the winner
   togglepilot --help             Show this help
 
 Credentials (environment variables only, see .env.example):
@@ -173,12 +175,8 @@ function printPlan(plan: ExperimentPlan, snippet: string): void {
   printOutput(snippet);
 }
 
-async function results(args: string[]): Promise<void> {
-  const { values } = parseArgs({
-    args,
-    options: { "experiment-id": { type: "string" }, refresh: { type: "boolean" } },
-  });
-  const id = values["experiment-id"] ?? process.env.TOGGLEPILOT_EXPERIMENT_ID ?? "590";
+function experimentCredentials(requestedId?: string) {
+  const id = requestedId ?? process.env.TOGGLEPILOT_EXPERIMENT_ID ?? "590";
   const experimentId = Number(id);
   if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(experimentId)) {
     throw new Error("Provide a positive integer experiment ID.");
@@ -188,9 +186,35 @@ async function results(args: string[]): Promise<void> {
   if (!apiKey || !environmentKey) {
     throw new Error("Set FLAGSMITH_API_KEY and FLAGSMITH_ENVIRONMENT_KEY to read experiment results.");
   }
+  return { experimentId, apiKey, environmentKey };
+}
+
+async function runRollout(args: string[]): Promise<void> {
+  const { values } = parseArgs({
+    args,
+    options: { "experiment-id": { type: "string" }, "dry-run": { type: "boolean" } },
+  });
+  const prompt = createPrompt();
+  try {
+    await rollout({
+      ...experimentCredentials(values["experiment-id"]),
+      dryRun: values["dry-run"] ?? false,
+      print: printOutput, prompt, redact,
+    });
+  } finally {
+    prompt.close();
+  }
+}
+
+async function results(args: string[]): Promise<void> {
+  const { values } = parseArgs({
+    args,
+    options: { "experiment-id": { type: "string" }, refresh: { type: "boolean" } },
+  });
+  const credentials = experimentCredentials(values["experiment-id"]);
   const disclosure = (await readFile(join(__dirname, "../docs/seeded-cohort-disclosure.md"), "utf8")).trim();
   printOutput(await readResults({
-    experimentId, apiKey, environmentKey, refresh: values.refresh ?? false, disclosure, redact,
+    ...credentials, refresh: values.refresh ?? false, disclosure, redact,
   }));
 }
 
@@ -205,8 +229,7 @@ async function main(): Promise<void> {
       await results(args);
       break;
     case "rollout":
-      requireCredentials("rollout");
-      console.log("togglepilot rollout: not implemented yet");
+      await runRollout(args);
       break;
     case "--help":
     case "-h":
