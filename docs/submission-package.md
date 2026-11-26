@@ -1,7 +1,6 @@
 # TogglePilot — submission package (pre-submission review, T-3.5)
 
-Status: ASSEMBLED 26 Nov 2026, NOT FILED. Nothing in this file has been submitted anywhere.
-Pintu reviews this exact package and approves before any filing.
+Status: APPROVED by Pintu 26 Nov 2026 22:57 IST. Video live on YouTube (public). README carries the real link. **NOT FILED — no submission route exists on WeMakeDevs (see filing attempt below).** Nothing in this file has been submitted anywhere.
 
 ## Event and deadline
 
@@ -33,6 +32,13 @@ Pintu reviews this exact package and approves before any filing.
 - Impact: HIGH. The five silent failures waste real teams' experiments; the measured scorecard proves the catch, and the tool is usable on Monday morning. Evidence: README scorecard table, "How it works" step 2.
 - Creativity: MEDIUM-HIGH. Clear, stated distance from Flagsmith's free official prompt (approval gates, pre-flight validation before creation, results narration, rollout). Capped because the core shape (prompt sets up an experiment) is the official flow, productised. Evidence: README "How it works" closing paragraph, MCP note.
 - Demo video: MEDIUM-HIGH once uploaded. Proves the claim on the real system: planted trap caught, one value edited and approved, real verdict and rollout, scorecard end card with disclosure. Capped because terminal segments are stills of real output rather than live motion, there is no Flagsmith dashboard footage, and the public link does not exist yet. Evidence: runs/demo-video/togglepilot-demo.mp4 (170 s, frames + audio verified).
+
+## Filing attempt — 26 Nov 2026 23:00–23:04 IST (BLOCKED, no route)
+
+- Pintu approved the package 22:57 IST ("Looks good — upload the video and file it"). T-3.4 ticked.
+- Video uploaded to YouTube as PUBLIC: https://www.youtube.com/watch?v=RFAjrDcmgic (verified playing, channel Pintu Kumar). README video line updated to the real link (commit e07ed32); video/host/repo all re-verified 200.
+- WeMakeDevs filing: signed in (REGISTERED confirmed on the event page), but https://www.wemakedevs.org/hackathons/flagsmith/submit says "No submissions for this one — Flagsmith Experimentation Hackathon takes registrations only, so there is no project to file here" (reloaded, identical). Full check of every event-page tab (Overview FAQ all 14 questions, Rules, Schedule, Resources): the page states what a submission needs (public GitHub repo, README with setup steps + Flagsmith use, 2–3 min demo video) and when it closes (29 Nov 20:00 IST) but NEVER names where to send it — no Devpost, Google Form, Luma, or email anywhere. Only help channel named: Flagsmith Discord, https://discord.gg/hFhxNtXzgm.
+- NOT FILED anywhere. Next step is Pintu's: ask in the Flagsmith Discord where submissions go (group joins are Pintu-only). The approved package is ready to file unchanged once the route is known. Deadline still Sun 29 Nov 20:00 IST.
 
 ## Pre-filing checklist (all must be done before T-3.5 files)
 
