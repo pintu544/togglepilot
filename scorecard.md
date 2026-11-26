@@ -4,9 +4,9 @@
 
 ## Claim
 
-**UNDECIDED — decision due 13:00 IST 26 Nov 2026.**
-- (a) Speed — "TogglePilot sets up in *X* min what takes *Y* min by hand" — only if the baseline is beatable on camera with margin.
+**LOCKED 26 Nov 2026 13:57 IST — Pintu confirmed Safety.**
 - (b) Safety — "TogglePilot catches the five silent failures that make experiments report zero; the dashboard catches none before launch."
+- ~~(a) Speed — "TogglePilot sets up in *X* min what takes *Y* min by hand"~~ — STRUCK OUT: manual baseline ~2 min is too fast to beat on camera with margin.
 - No third option; both claims are never carried.
 
 ## Measured numbers
