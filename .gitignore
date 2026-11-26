@@ -2,3 +2,5 @@
 runs/
 node_modules/
 dist/
+
+/host-app/.env.local
