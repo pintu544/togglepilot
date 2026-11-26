@@ -13,10 +13,17 @@
 
 | | Manual (dashboard) | TogglePilot |
 |---|---|---|
-| Wall-clock time | **~2 min** (09:04–09:06 IST, 26 Nov 2026) | *to be measured (T-2.6)* |
-| Surfaces/screens touched | **10** (see list below) | *to be measured* |
-| Silent-failure traps checked | **0 of 5** | *5 of 5 (target)* |
-| Approvals before anything mutates | n/a (no gate) | 3 (plan, start, rollout) |
+| Wall-clock time | **~2 min** (09:04–09:06 IST, 26 Nov 2026) | **8.5 s** recorded from CLI start to creation and verification (~1.9 s from start to re-approval, ~6.6 s after approval). First-time human review excluded. |
+| Surfaces/screens touched | **10** (see list below) | **1** (terminal CLI) |
+| Silent-failure traps checked | **0 of 5** | **5 of 5 passed** |
+| Approvals before anything mutates | n/a (no gate) | **3** required across the lifecycle (see gate status below) |
+
+## How the TogglePilot side was measured
+
+- The [Slice 1 run record](runs/2026-11-26T09-21-53.256Z/run-record.md) logs CLI start at `2026-11-26T09:21:51.367Z`, plan approval at `2026-11-26T09:21:53.256Z`, and execution finish at `2026-11-26T09:21:59.843Z`. The 8.5 s elapsed covers pre-flight, approval, and creation and verification of experiment 590 in the terminal. The ~1.9 s start-to-approval interval includes CLI work and a fast re-approval of an already-reviewed plan. First-time human reading and approval are excluded, and the record does not isolate human input within that interval. Post-approval execution took ~6.6 s. The run ended with the experiment created and unstarted.
+- The record shows five passes covering the warehouse connection, variant keys and labels, metric event name, SDK versions, and instrumentation identity and event flushing. Slice 1 (T-1.2) separately verified that an unlabelled variant halted the run before anything was created.
+- Gate 1 (plan) was exercised live in the recorded run. Gate 2 (start) is pending under T-2.3, with no start approval path in the checked-in CLI. Gate 3 (rollout) is implemented in `src/rollout.ts` and its live exercise is pending.
+- A fresh full `togglepilot run` would create a second experiment on the same flag, so this scorecard uses the existing Slice 1 record. The locked claim remains **Safety**. The time row records the observed setup interval.
 
 ## Manual baseline record (T-0.2, 26 Nov 2026, browser task 09:01–09:07 IST)
 
