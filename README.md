@@ -18,7 +18,7 @@ The manual side was timed by hand in the Flagsmith dashboard on 26 Nov 2026: war
 ## Live demo and video
 
 - Live host app: https://togglepilot-host.vercel.app (serves the winning headline to every new visitor since the rollout)
-- Demo video: `runs/demo-video/togglepilot-demo.mp4` (YouTube upload pending, link to be added here once live)
+- Demo video: https://www.youtube.com/watch?v=RFAjrDcmgic (170 s; also in this repo at `runs/demo-video/togglepilot-demo.mp4`)
 - Repository: https://github.com/pintu544/togglepilot
 - The live experiment: experiment 590, completed 26 Nov 2026. Variant_1 (shorter headline) won with 99.41% probability and was rolled out to 100% on the same flag.
 
