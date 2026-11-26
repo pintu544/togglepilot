@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@flagsmith/nodejs": "9.1.0"
+  }
+}

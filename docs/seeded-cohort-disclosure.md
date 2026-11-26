@@ -1,0 +1,1 @@
+The experiment includes a simulator cohort of 400 identities. Each identity receives its arm from Flagsmith, then the simulator generates conversions at a fixed probability of about 30% for control and 42% for the variant. This traffic is seeded, not organic. The rates were committed before the experiment started and are frozen after start.
