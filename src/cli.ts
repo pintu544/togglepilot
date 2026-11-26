@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { parseArgs } from "node:util";
 import { requireCredentials } from "./credentials";
 import { executePlan } from "./executor";
 import { approvalGate } from "./gate";
 import { createPrompt } from "./prompt";
 import { appendExecutionRecord, saveRunRecord } from "./record";
+import { readResults } from "./results";
 import { containsCredential, isExperimentPlan, planExperiment, type ExperimentPlan, type PlannerContext } from "./planner";
 import { generateInstrumentationSnippet } from "./snippet";
 import { formatPreflightReport, runPreflightChecks } from "./validator";
@@ -19,7 +22,8 @@ Usage:
                                 Validate and review a saved JSON plan
   togglepilot run <sentence> --plan-only [--guided] [--app-path <path>]
                               [--flag <name>] [--metric-event <event>]
-  togglepilot results            Plain-English readout of the experiment's results
+  togglepilot results [--experiment-id <id>] [--refresh]
+                                Plain-English readout of the experiment's results
   togglepilot rollout            Recommend and (on approval) roll out the winner
   togglepilot --help             Show this help
 
@@ -169,6 +173,27 @@ function printPlan(plan: ExperimentPlan, snippet: string): void {
   printOutput(snippet);
 }
 
+async function results(args: string[]): Promise<void> {
+  const { values } = parseArgs({
+    args,
+    options: { "experiment-id": { type: "string" }, refresh: { type: "boolean" } },
+  });
+  const id = values["experiment-id"] ?? process.env.TOGGLEPILOT_EXPERIMENT_ID ?? "590";
+  const experimentId = Number(id);
+  if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(experimentId)) {
+    throw new Error("Provide a positive integer experiment ID.");
+  }
+  const apiKey = process.env.FLAGSMITH_API_KEY;
+  const environmentKey = process.env.FLAGSMITH_ENVIRONMENT_KEY;
+  if (!apiKey || !environmentKey) {
+    throw new Error("Set FLAGSMITH_API_KEY and FLAGSMITH_ENVIRONMENT_KEY to read experiment results.");
+  }
+  const disclosure = (await readFile(join(__dirname, "../docs/seeded-cohort-disclosure.md"), "utf8")).trim();
+  printOutput(await readResults({
+    experimentId, apiKey, environmentKey, refresh: values.refresh ?? false, disclosure, redact,
+  }));
+}
+
 async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2);
 
@@ -177,7 +202,7 @@ async function main(): Promise<void> {
       await run(args);
       break;
     case "results":
-      console.log("togglepilot results: not implemented yet");
+      await results(args);
       break;
     case "rollout":
       requireCredentials("rollout");
