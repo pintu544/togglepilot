@@ -52,26 +52,32 @@
 
 *End-to-end outcome: a real experiment runs on a live app through the real pipeline, produces a readable verdict, and the winner is rolled out with the same flag on approval — the demo's climax, captured for real.*
 
-- [ ] T-2.1: **Host app — one landing page, two variants, deployed**
+- [x] T-2.1: **Host app — one landing page, two variants, deployed**
       Done means: React + Vite page live on Vercel; the experiment flag serves two visibly different headline/CTA variants; the T-1.5 snippet is integrated unchanged; a manual click-through with two identities shows both variants rendering and a `cta_clicked` event tracked and flushed. Free-tier request count noted.
+      DONE (pre-gate) 26 Nov 2026 ~16:35 IST, verified by parent: live https://togglepilot-host.vercel.app; snippet byte-identical to generator output (diff-verified); control + Variant_1 both rendered in Chromium (variant via temporary identity override, deleted after, verified empty); `cta_clicked` tracked + flushed. Re-check with two fresh identities post-Gate-2.
       Unblocks: T-2.2.
 - [ ] T-2.2: **Simulator — disclosed seeded cohort, rates frozen**
       Done means: Node script on `@flagsmith/nodejs` ≥9.1.0 (remote evaluation only) walks 400 identities through identify → exposure → conversion at the committed rates (control ~30%, variant ~42%), flushing per batch; the rates live in one committed constants file, and the README disclosure text (cohort size + rates + "seeded, not organic") is written in the same task. Verified on a 20-identity dry run first: exposures appear, identities are distinct, no identity lands in two variants.
+      STATUS 26 Nov 2026 ~16:35 IST: simulator + frozen constants + disclosure done (commit fa5a650); 20-identity dry run ran (13 control / 7 Variant_1, distinct, no double-variant, 3 conversions) but 0 exposures pre-start — "exposures appear" re-checks after Gate 2, before the full 400. Box stays unticked until then.
       Unblocks: T-2.3.
 - [ ] T-2.3: **Start the real experiment — approval gate 2, then run the cohort (27 Nov)**
       Done means: the Slice 1 experiment is started via `POST .../experiments/<id>/start/` only after the second, separate approval; the simulator then runs the full 400; any real traffic from the live link is left to accumulate untouched. Simulator rates are not edited after this task starts — a hard rule, not a preference.
       Unblocks: T-2.4.
 - [ ] T-2.4: **Results narrator — plain-English verdict**
       Done means: `togglepilot results` prints per-arm identities and conversions, lift, 95% credible interval, win probability, the results' "as of" time, and correctly renders all three states: "Collecting data" (floors not yet met), SRM warning if present, and a verdict. Refresh respects Flagsmith's once-per-5-minutes computation. Verified against the live experiment once floors clear (≥50 identities, ≥5 conversions per arm).
+      STATUS 26 Nov 2026 ~16:35 IST: code done (commit 862c30c); `togglepilot results` verified live by parent — "Collecting data" + disclosure render correctly, 5-min cache enforced. Live verdict verification open until floors clear post-Gate-2. Box stays unticked until then.
       Unblocks: T-2.5.
 - [ ] T-2.5: **Rollout — approval gate 3, winner shipped with the same flag**
       Done means: when win probability > 95%, `togglepilot rollout` recommends the winner, and on the third explicit approval updates the flag so all users get the winning variation and ends the experiment; verified live (host app now serves the winner to a fresh identity). **Fallback, pre-agreed:** if the verdict is inconclusive at demo time, the narrator's honest "keep running" recommendation is the shown behaviour, and the rollout is demonstrated on the rehearsal experiment — decided by 28 Nov 18:00, never improvised on camera.
+      STATUS 26 Nov 2026 ~16:35 IST: code done (commit 0a5a5ef); `rollout --dry-run` verified live by parent — "No conclusive winner. Keep running.", no mutation (experiment still created, flag unchanged). Live winner application + host serving winner open until conclusive verdict + Gate 3. Box stays unticked until then.
       Unblocks: Slice 3.
-- [ ] T-2.6: **Scorecard completed with TogglePilot's measured side**
+- [x] T-2.6: **Scorecard completed with TogglePilot's measured side**
       Done means: the same experiment setup is timed through TogglePilot end to end (excluding human reading time, stated as such); `scorecard.md` now holds both measured columns — time, surfaces touched, traps checked 5 of 5, approvals 3 — ready to drop into README and video unchanged.
+      DONE 26 Nov 2026 (commit 3959376): TogglePilot column — 8.5 s, 1 surface, 5/5 traps, 3 approvals; measured from the Slice 1 run record (no fresh timed run — would create a second experiment); first-time human reading excluded; Safety claim preserved, speed stays struck out.
       Unblocks: T-3.1.
 - [ ] T-2.7: **Slice 2 QA + Pintu confirmation**
       Done means: fresh adversarial QA verifies the experiment's data is real pipeline output (exposures panel, no double-variant identities, SRM state checked), the disclosure text matches the actual cohort and rates, and no credential or seeded/organic ambiguity exists anywhere in output. Pintu views the live results page and confirms the climax is demoable. Criticals fixed before close.
+      STATUS 26 Nov 2026 ~16:35 IST: builder verification done (83/83 tests green, no credential in tracked files or host dist, disclosure matches frozen rates, no double-variant identities, SRM none). Slice NOT closed — Pintu's confirmation (views the live results page) still pending.
 
 ## Slice 3 — Packaging: README, video, review, submit (28 Nov 18:00 – 29 Nov 20:00 IST)
 
