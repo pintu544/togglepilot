@@ -28,7 +28,7 @@ TogglePilot holds no database. Its state is three file shapes plus Flagsmith its
 
 ## API Contracts
 
-All Flagsmith calls use the environment key in the path, per the official coding-agent guide (`research.md` §2.4). Auth: Management API key from the `FLAGSMITH_API_KEY` environment variable; environment key from `FLAGSMITH_ENVIRONMENT_KEY`. Neither is ever printed or committed (SPEC NFR-2).
+All Flagsmith calls use the environment key in the path, per the official coding-agent guide (`research.md` §2.4). Auth: Management API key from the `FLAGSMITH_API_KEY` environment variable; environment key from `FLAGSMITH_ENVIRONMENT_KEY`. Neither is ever printed or committed (SPEC NFR-2). **Verified 26 Nov 2026: organisation API keys authenticate as `Authorization: Api-Key <key>` — the `Token` scheme returns 401 "Invalid token". Slice 1's Executor MUST use the `Api-Key` header.**
 
 - **Check warehouse** — `GET api/v1/environments/<environment key>/warehouse-connections/` → 200 with at least one connection = pass; empty/absent = pre-flight failure #1.
 - **Create flag + variants** — Flagsmith CLI v2 (subprocess, JSON captured):
