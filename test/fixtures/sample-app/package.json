@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@flagsmith/flagsmith": "^12.6.0"
+  }
+}

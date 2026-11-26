@@ -30,19 +30,19 @@
 
 *End-to-end outcome: `togglepilot run` takes a sentence to an approved, validated plan and creates a real flag, metric and experiment in Flagsmith — and refuses to create anything when a silent trap is present.*
 
-- [ ] T-1.1: **Planner — sentence to ExperimentPlan**
+- [x] T-1.1: **Planner — sentence to ExperimentPlan**
       Done means: given "Test whether a shorter headline lifts clicks on my landing page", the CLI produces a complete plan (flag, ≥2 keyed variants, metric event + aggregation, rollout, split, hypothesis in Flagsmith's format: change + metric + expected effect + timeframe); schema-invalid drafts are rejected and the guided fallback flow produces the identical plan shape. Verified against 3 sample sentences + 1 fallback run.
       Unblocks: T-1.2, T-1.3.
-- [ ] T-1.2: **Pre-flight validator — the five checks (headline differentiator)**
+- [x] T-1.2: **Pre-flight validator — the five checks (headline differentiator)**
       Done means: all five checks from SPEC FR-2 run before any creation and print pass/fail + fix in plain English: warehouse connected (live API check), every variant keyed/labelled, metric event name exactly matching the app's event (case-sensitive), SDK versions ≥ minimums read from the target app's `package.json`, identity + `flushEvents()` present in the instrumentation. Any failure halts the run with nothing created — verified by running against a deliberately broken plan (unlabelled variant) and confirming zero Flagsmith objects exist afterwards.
       Unblocks: T-1.3; the planted-trap demo (T-3.3).
-- [ ] T-1.3: **Approval gate 1 — review, edit, approve, reject**
+- [x] T-1.3: **Approval gate 1 — review, edit, approve, reject**
       Done means: the plan is printed in full; the human can edit variant values, split, rollout % and event name, then approve or reject; rejection ends the run with nothing created (verified); the approved (possibly edited) plan is the one executed and the one saved to the run record.
       Unblocks: T-1.4.
-- [ ] T-1.4: **Executor — create flag, variants, metric, experiment (no start)**
+- [x] T-1.4: **Executor — create flag, variants, metric, experiment (no start)**
       Done means: on approval, flag + variants are created via Flagsmith CLI v2 and metric + experiment via REST (`POST .../experiment-metrics/`, `POST .../experiments/`); each object is re-read and verified after creation; a forced API failure surfaces the exact error and step, with no false success (SPEC NFR-3). The experiment exists in the dashboard, not started, flag not yet locked.
       Unblocks: T-1.5, Slice 2.
-- [ ] T-1.5: **Instrumentation generator — React/TypeScript snippet**
+- [x] T-1.5: **Instrumentation generator — React/TypeScript snippet**
       Done means: the CLI emits a snippet for the host app that initialises `@flagsmith/flagsmith` ≥12.4.0 with `enableEvents: true`, identifies with a persistent identity, records exposure via `getExperimentFlag`/`useExperiment` at the render point, tracks the exact metric event, and flushes; the snippet passes the validator's own check #5. Pasted into the host app in Slice 2 without hand edits.
       Unblocks: T-2.1.
 - [ ] T-1.6: **Slice 1 QA + Pintu confirmation**
